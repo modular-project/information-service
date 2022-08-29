@@ -1,29 +1,44 @@
 package controller
 
 import (
+	"fmt"
 	"information-service/model"
 	"information-service/storage"
-	"log"
 
 	pb "github.com/modular-project/protobuffers/order/order"
 )
 
-func checkProducts(ps []*pb.OrderProduct) error {
+func CheckProducts(ps []*pb.OrderProduct) (float64, error) {
+	var total float64
 	size := len(ps)
 	ids := make([]uint, size)
 	for i, p := range ps {
 		ids[i] = uint(p.ProductId)
 	}
-	log.Printf("%+v", ids)
 	m := []model.Product{}
-	res := storage.DB().Select("id").Where(ids).Find(&m)
-	if size != int(res.RowsAffected) {
-		return ErrProductNotFound
+	res := storage.DB().Select("id", "price").Where(ids).Find(&m)
+	if res.Error != nil {
+		return 0, fmt.Errorf("find products in batch: %w", res.Error)
 	}
-	return res.Error
+	mp := make(map[uint]float64)
+	for _, p := range m {
+		mp[p.ID] = p.Price
+	}
+	for i := range ps {
+		p, ok := mp[uint(ps[i].ProductId)]
+		if !ok {
+			return 0, fmt.Errorf("product %d not found", ps[i].ProductId)
+		}
+		total += p * float64(ps[i].Quantity)
+	}
+	return total, nil
 }
 
 func checkLocalOrder(o *pb.Order) error {
+	rows := storage.DB().Where("id = ? ", o.EstablishmentId).Select("id").First(&model.Establishment{}).RowsAffected
+	if rows == 0 {
+		return ErrEstablishmentNotFound
+	}
 	table := model.Table{}
 	res := storage.DB().Where("id = ? AND establishment_id = ?", o.GetLocalOrder().TableId, o.EstablishmentId).First(&table)
 	if res.RowsAffected == 0 {
@@ -42,26 +57,18 @@ func checkLocalOrder(o *pb.Order) error {
 	return nil
 }
 
-func checkRemoteOrder(o *pb.Order) error {
-	return nil
-}
-
-func ValidateOrder(o *pb.Order) error {
-	rows := storage.DB().Where("id = ? ", o.EstablishmentId).Select("id").First(&model.Establishment{}).RowsAffected
-	if rows == 0 {
-		return ErrEstablishmentNotFound
-	}
+func ValidateOrder(o *pb.Order) (float64, error) {
+	// TODO MOVE
 	switch o.Type.(type) {
 	case *pb.Order_LocalOrder:
 		err := checkLocalOrder(o)
 		if err != nil {
-			return err
-		}
-	case *pb.Order_RemoteOrder:
-		err := checkRemoteOrder(o)
-		if err != nil {
-			return err
+			return 0, err
 		}
 	}
-	return checkProducts(o.OrderProducts)
+	t, err := CheckProducts(o.OrderProducts)
+	if err != nil {
+		return 0, fmt.Errorf("checkProducts: %w", err)
+	}
+	return t, nil
 }

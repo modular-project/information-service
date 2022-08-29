@@ -31,7 +31,7 @@ func (p *ProductService) Get(ctx context.Context, in *pb.RequestById) (*pb.Produ
 	if err != nil {
 		return &pb.Product{}, err
 	}
-	return &pb.Product{Name: m.Name, Url: m.Name, Description: m.Description, Price: float32(m.Price)}, err
+	return &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price)}, err
 }
 
 func (p *ProductService) GetAll(ctx context.Context, in *pb.RequestGetAll) (*pb.ResponseGetAll, error) {
@@ -41,7 +41,7 @@ func (p *ProductService) GetAll(ctx context.Context, in *pb.RequestGetAll) (*pb.
 	}
 	products := make([]*pb.Product, len(ms))
 	for i, m := range ms {
-		products[i] = &pb.Product{Name: m.Name, Price: float32(m.Price), Url: m.Url, Description: m.Description}
+		products[i] = &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price)}
 	}
 	return &pb.ResponseGetAll{Products: products}, nil
 }
@@ -62,4 +62,19 @@ func (p *ProductService) Delete(ctx context.Context, in *pb.RequestById) (*pb.Re
 		return nil, err
 	}
 	return &pb.ResponseDelete{}, nil
+}
+
+func (p *ProductService) GetInBatch(ctx context.Context, in *pb.RequestGetInBatch) (*pb.ResponseGetAll, error) {
+	ms, err := controller.GetProductsInBatch(in.Ids)
+	if err != nil {
+		return nil, err
+	}
+	if ms == nil {
+		return nil, nil
+	}
+	products := make([]*pb.Product, len(ms))
+	for i, m := range ms {
+		products[i] = &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price)}
+	}
+	return &pb.ResponseGetAll{Products: products}, nil
 }

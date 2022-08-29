@@ -1,20 +1,27 @@
 package controller
 
 import (
+	"fmt"
 	"information-service/model"
 	"information-service/storage"
-	"time"
 )
 
 func CreateProduct(m *model.Product) error {
-	m.CreatedAt = time.Time{}
-	m.UpdatedAt = time.Time{}
+	m.CreatedAt = nil
+	m.UpdatedAt = nil
 	m.ID = 0
 	return storage.DB().Omit("deleted_at").Create(m).Error
 }
 
 func DeleteProductById(id uint) error {
-	return storage.DB().Where("id = ?", id).Delete(&model.Product{}).Error
+	res := storage.DB().Where("id = ? AND deleted_at IS NULL", id).Delete(&model.Product{})
+	if res.Error != nil {
+		return fmt.Errorf("%w, %v", unauthorizedErr("error asd"), res.Error)
+	}
+	if res.RowsAffected == 0 {
+		return unauthorizedErr("no rows")
+	}
+	return nil
 }
 
 func UpdateProductById(id uint, m *model.Product) error {
@@ -37,5 +44,11 @@ func GetProductById(id uint) (model.Product, error) {
 func GetAllProducts() ([]model.Product, error) {
 	m := []model.Product{}
 	err := storage.DB().Find(&m).Error
+	return m, err
+}
+
+func GetProductsInBatch(ids []uint64) ([]model.Product, error) {
+	m := []model.Product{}
+	err := storage.DB().Unscoped().Find(&m, ids).Error
 	return m, err
 }

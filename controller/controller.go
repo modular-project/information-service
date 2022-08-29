@@ -12,4 +12,13 @@ var (
 	ErrTableNotAvailable             = errors.New("table not available")
 	ErrTableIsInUse                  = errors.New("table is in use")
 	ErrTableIsInAnotherEstablishment = errors.New("table is in another establishment")
+	ErrNoRowsAffected                = errors.New("no rows affected")
 )
+
+type unauthorizedErr string
+
+func (u unauthorizedErr) Error() string {
+	return string(u)
+}
+
+func (u unauthorizedErr) IsUnauthorized() {}

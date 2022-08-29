@@ -8,6 +8,15 @@ import (
 	"testing"
 )
 
+var TestConfigDB storage.DBConnection = storage.DBConnection{
+	TypeDB:   storage.POSTGRESQL,
+	User:     "admin_restaurant",
+	Password: "RestAuraNt_pgsql.561965697",
+	Host:     "localhost",
+	Port:     "5433",
+	NameDB:   "testing",
+}
+
 func dropsTables(t *testing.T, tables ...interface{}) {
 	err := storage.DB().Migrator().DropTable(tables...)
 	if err != nil {
@@ -17,14 +26,14 @@ func dropsTables(t *testing.T, tables ...interface{}) {
 
 func createEstablishment(size int) {
 	for i := 0; i < size; i++ {
-		m := model.Establishment{Name: "test"}
+		m := model.Establishment{}
 		controller.CreateEstablishment(&m)
 	}
 
 }
 
 func TestIncreaseTablesQuantityInBatchInEstablishment(t *testing.T) {
-	storage.New(storage.TESTING)
+	storage.NewDB(&TestConfigDB)
 	models := []interface{}{model.Establishment{}, model.Table{}}
 	err := storage.DB().AutoMigrate(models...)
 	if err != nil {
@@ -49,7 +58,7 @@ func TestIncreaseTablesQuantityInBatchInEstablishment(t *testing.T) {
 
 	createEstablishment(2)
 	for _, tc := range testCase {
-		err := controller.IncreaseQuantityTablesInEstablishment(tc.in.id, int(tc.in.quantity))
+		_, err := controller.IncreaseQuantityTablesInEstablishment(tc.in.id, int(tc.in.quantity))
 		if !errors.Is(tc.err, err) {
 			t.Errorf("error at increase quantity, got: %s, want: %s", err, tc.err)
 		}
@@ -64,7 +73,7 @@ func TestIncreaseTablesQuantityInBatchInEstablishment(t *testing.T) {
 }
 
 func TestDecreaseTableInEstablishment(t *testing.T) {
-	storage.New(storage.TESTING)
+	storage.NewDB(&TestConfigDB)
 	models := []interface{}{model.Establishment{}, model.Table{}}
 	err := storage.DB().AutoMigrate(models...)
 	if err != nil {

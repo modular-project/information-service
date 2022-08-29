@@ -21,7 +21,7 @@ func equalsProducts(p1, p2 *model.Product) bool {
 }
 
 func TestUpdateProduct(t *testing.T) {
-	storage.New(storage.TESTING)
+	storage.NewDB(&TestConfigDB)
 	models := []interface{}{model.Product{}}
 	err := storage.DB().AutoMigrate(models...)
 	if err != nil {
@@ -35,9 +35,13 @@ func TestUpdateProduct(t *testing.T) {
 	}{
 		{1, model.Product{Name: "updated", Price: 10.45, Description: "updated", Url: "updated"}, nil},
 		{1, model.Product{Name: "updated", Price: 10.45, Description: "updated", Url: "updated"}, controller.ErrProductNotFound},
-		{2, model.Product{Model: model.Model{ID: 1, CreatedAt: time.Now().Add(time.Hour), UpdatedAt: time.Now().Add(time.Hour)}, Name: "updated 2", Price: 20.45, Description: "updated 2", Url: "updated 2"}, nil},
+		{2, model.Product{Model: model.Model{ID: 1}, Name: "updated 2", Price: 20.45, Description: "updated 2", Url: "updated 2"}, nil},
 		{6, model.Product{Name: "updated 3", Price: 10.45, Description: "updated 3", Url: "updated 3"}, controller.ErrProductNotFound},
 	}
+	c := time.Now().Add(time.Hour)
+	u := time.Now().Add(time.Hour)
+	testCase[2].in.CreatedAt = &c
+	testCase[2].in.UpdatedAt = &u
 	size := 3
 	now := time.Now().Add(time.Minute)
 	createProducts(size)
@@ -53,13 +57,13 @@ func TestUpdateProduct(t *testing.T) {
 			if !equalsProducts(&m, &tc.in) {
 				t.Errorf("got product: %+v, want %+v", m, tc.in)
 			}
-			if now.Before(m.CreatedAt) {
+			if now.Before(*m.CreatedAt) {
 				t.Errorf("got created at: %s", m.CreatedAt)
 			}
 			if now.Before(m.DeletedAt.Time) {
 				t.Errorf("got deleted at: %s", m.DeletedAt.Time)
 			}
-			if !m.UpdatedAt.Equal(m.CreatedAt) {
+			if !m.UpdatedAt.Equal(*m.CreatedAt) {
 				t.Errorf("time updated and created are diferent")
 			}
 		}

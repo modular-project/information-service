@@ -12,18 +12,18 @@ type TableService struct {
 }
 
 func (service *TableService) AddTable(ctx context.Context, in *pb.RequestById) (*pb.ResponseAdd, error) {
-	err := controller.AddTableToEstablishment(uint(in.Id))
+	ids, err := controller.AddTableToEstablishment(uint(in.Id))
 	if err != nil {
 		return nil, err
 	}
-	return &pb.ResponseAdd{}, nil
+	return &pb.ResponseAdd{Ids: ids}, nil
 }
 func (service *TableService) AddTables(ctx context.Context, in *pb.RequestAdd) (*pb.ResponseAdd, error) {
-	err := controller.IncreaseQuantityTablesInEstablishment(uint(in.Id), int(in.Quantity))
+	ids, err := controller.IncreaseQuantityTablesInEstablishment(uint(in.Id), int(in.Quantity))
 	if err != nil {
 		return nil, err
 	}
-	return &pb.ResponseAdd{}, nil
+	return &pb.ResponseAdd{Ids: ids}, nil
 }
 func (service *TableService) GetFromEstablishment(ctx context.Context, in *pb.RequestById) (*pb.ResponseGetAll, error) {
 	ms, err := controller.GetTablesInEstablishment(uint(in.Id))

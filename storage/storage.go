@@ -3,7 +3,6 @@ package storage
 import (
 	"fmt"
 	"log"
-	"os"
 	"sync"
 
 	"gorm.io/driver/postgres"
@@ -22,7 +21,8 @@ var (
 	once sync.Once
 )
 
-type dbUser struct {
+type DBConnection struct {
+	TypeDB   DRIVER
 	User     string
 	Password string
 	Port     string
@@ -30,74 +30,45 @@ type dbUser struct {
 	Host     string
 }
 
-func New(driver DRIVER) {
+func NewDB(conn *DBConnection) error {
+	var err error
 	once.Do(func() {
-		u := loadData()
-		switch driver {
+		switch conn.TypeDB {
 		case POSTGRESQL:
-			newPostgresDB(&u)
-		case TESTING:
-			newTestingDB(&u)
+			err = newPostgresDB(conn)
+		default:
+			err = fmt.Errorf("invalid database type")
 		}
 	})
+	return err
 }
 
-func newTestingDB(u *dbUser) {
+func newTestingDB(conn *DBConnection) error {
 	var err error
-	fmt.Print(u)
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", u.User, u.Password, u.Host, u.Port, "testing")
+	fmt.Print(conn)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", conn.User, conn.Password, conn.Host, conn.Port, "testing")
 	db, err = gorm.Open(postgres.Open(dsn))
 	if err != nil {
-		log.Fatalf("no se pudo abrir la base de datos: %v", err)
+		return fmt.Errorf("no se pudo abrir la base de datos: %v", err)
 	}
 
 	fmt.Println("conectado a Testing")
+	return nil
 }
 
-func newPostgresDB(u *dbUser) {
+func newPostgresDB(conn *DBConnection) error {
 	var err error
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", u.User, u.Password, u.Host, u.Port, u.NameDB)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", conn.User, conn.Password, conn.Host, conn.Port, conn.NameDB)
 	db, err = gorm.Open(postgres.Open(dsn))
 	if err != nil {
-		log.Fatalf("no se pudo abrir la base de datos: %v", err)
+		return fmt.Errorf("no se pudo abrir la base de datos: %v", err)
 	}
 
-	fmt.Println("conectado a postgres")
+	log.Println("conectado a postgres")
+	return nil
 }
 
 // DB return a unique instance of db
 func DB() *gorm.DB {
 	return db
-}
-
-func getEnv(env string) (string, error) {
-	s, f := os.LookupEnv(env)
-	if !f {
-		return "", fmt.Errorf("environment variable (%s) not found", env)
-	}
-	return s, nil
-}
-
-func loadData() dbUser {
-	user, err := getEnv("DB_USER")
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-	password, err := getEnv("DB_PASSWORD")
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-	port, err := getEnv("INFO_DB_PORT")
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-	name, err := getEnv("INFO_DB_NAME")
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-	host, err := getEnv("INFO_DB_HOST")
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-	return dbUser{user, password, port, name, host}
 }

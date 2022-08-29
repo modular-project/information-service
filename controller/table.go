@@ -9,7 +9,7 @@ func createTable(id uint) model.Table {
 	return model.Table{EstablishmentID: id, UserID: 0}
 }
 
-func AddTableToEstablishment(id uint) error {
+func AddTableToEstablishment(id uint) ([]uint64, error) {
 	return IncreaseQuantityTablesInEstablishment(id, 1)
 }
 
@@ -33,18 +33,29 @@ func RemoveTableFromEstablishment(establishmentID, quantity uint) (uint32, error
 	return uint32(res.RowsAffected), res.Error
 }
 
-func IncreaseQuantityTablesInEstablishment(id uint, quantity int) error {
+func IncreaseQuantityTablesInEstablishment(id uint, quantity int) ([]uint64, error) {
 	if quantity < 1 {
-		return ErrQuantityMustBeGreaterThanZero
+		return nil, ErrQuantityMustBeGreaterThanZero
 	}
 	if storage.DB().Where("id = ?", id).First(&model.Establishment{}).RowsAffected == 0 {
-		return ErrEstablishmentNotFound
+		return nil, ErrEstablishmentNotFound
 	}
 	m := make([]model.Table, quantity)
 	for i := 0; i < quantity; i++ {
 		m[i] = createTable(id)
 	}
-	return storage.DB().CreateInBatches(m, int(quantity)).Error
+	res := storage.DB().CreateInBatches(m, int(quantity))
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, ErrNoRowsAffected
+	}
+	ids := make([]uint64, res.RowsAffected)
+	for i := range ids {
+		ids[i] = uint64(m[i].ID)
+	}
+	return ids, nil
 }
 
 func GetTablesQuantityInEstablishment(id uint) (uint, error) {
@@ -63,6 +74,9 @@ func ChangeTableStatusById(userID uint, establishment_id uint, tableId uint) err
 	m := model.Table{}
 	if storage.DB().Where("id = ?", tableId).First(&m).RowsAffected == 0 {
 		return ErrTableNotFound
+	}
+	if m.EstablishmentID != establishment_id {
+		return unauthorizedErr("the table is in another establishment")
 	}
 	if m.UserID != 0 && m.UserID != userID {
 		return ErrTableNotAvailable

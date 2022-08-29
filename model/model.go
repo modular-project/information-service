@@ -8,22 +8,22 @@ import (
 
 type Model struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"-"`
+	CreatedAt *time.Time     `json:"created_at"`
+	UpdatedAt *time.Time     `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 type Product struct {
 	Model
-	Name        string
-	Price       float64
-	Description string
-	Url         string
+	Name        string  `json:"name,omitempty"`
+	Price       float64 `json:"price,omitempty"`
+	Description string  `json:"description,omitempty"`
+	Url         string  `json:"url,omitempty"`
 }
 
 type Establishment struct {
 	Model
-	Tables []Table
-	Name   string
+	AddressID string
+	Tables    []Table
 }
 
 type Table struct {
