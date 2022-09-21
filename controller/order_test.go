@@ -57,7 +57,7 @@ func TestValidateOrder(t *testing.T) {
 					{ProductId: 5, Quantity: 8},
 				}},
 		}, {
-			in: pb.Order{EstablishmentId: 1, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: 2, UserId: 2}},
+			in: pb.Order{EstablishmentId: 1, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: "", UserId: 2}},
 				OrderProducts: []*pb.OrderProduct{
 					{ProductId: 1, Quantity: 3},
 					{ProductId: 2, Quantity: 1},
@@ -81,13 +81,13 @@ func TestValidateOrder(t *testing.T) {
 				}},
 			wantErr: true,
 		}, {
-			in: pb.Order{EstablishmentId: 1, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: 2, UserId: 2}},
+			in: pb.Order{EstablishmentId: 1, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: "", UserId: 2}},
 				OrderProducts: []*pb.OrderProduct{
 					{ProductId: 8, Quantity: 3},
 				}},
 			wantErr: true,
 		}, {
-			in: pb.Order{EstablishmentId: 3, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: 2, UserId: 2}},
+			in: pb.Order{EstablishmentId: 3, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: "", UserId: 2}},
 				OrderProducts: []*pb.OrderProduct{
 					{ProductId: 1, Quantity: 3},
 				}},
@@ -96,12 +96,12 @@ func TestValidateOrder(t *testing.T) {
 				{ProductId: 1, Quantity: 3},
 			}},
 		}, {
-			in: pb.Order{EstablishmentId: 1, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: 3, UserId: 2}},
+			in: pb.Order{EstablishmentId: 1, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: "", UserId: 2}},
 				OrderProducts: []*pb.OrderProduct{
 					{ProductId: 2, Quantity: 1},
 				}},
 		}, {
-			in: pb.Order{EstablishmentId: 1, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: 2, UserId: 2}},
+			in: pb.Order{EstablishmentId: 1, Type: &pb.Order_RemoteOrder{RemoteOrder: &pb.RemoteOrder{AddressId: "", UserId: 2}},
 				OrderProducts: []*pb.OrderProduct{
 					{ProductId: 2, Quantity: 1},
 				}},

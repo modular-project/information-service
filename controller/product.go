@@ -13,6 +13,18 @@ func CreateProduct(m *model.Product) error {
 	return storage.DB().Omit("deleted_at").Create(m).Error
 }
 
+func GetProductsByBase(b string) ([]model.Product, error) {
+	var products []model.Product
+	res := storage.DB().Model(&model.Product{}).Joins("LEFT JOIN bases as b ON products.base_id = b.id").Where("b.name = ?", b).Find(&products)
+	if res.RowsAffected == 0 {
+		return nil, fmt.Errorf("no rows affected")
+	}
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return products, nil
+}
+
 func DeleteProductById(id uint) error {
 	res := storage.DB().Where("id = ? AND deleted_at IS NULL", id).Delete(&model.Product{})
 	if res.Error != nil {

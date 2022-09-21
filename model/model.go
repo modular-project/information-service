@@ -12,12 +12,14 @@ type Model struct {
 	UpdatedAt *time.Time     `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
+
 type Product struct {
 	Model
 	Name        string  `json:"name,omitempty"`
 	Price       float64 `json:"price,omitempty"`
 	Description string  `json:"description,omitempty"`
 	Url         string  `json:"url,omitempty"`
+	BaseID      uint
 }
 
 type Establishment struct {

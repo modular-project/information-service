@@ -18,6 +18,7 @@ func (p *ProductService) Create(c context.Context, in *pb.Product) (*pb.Response
 		Price:       float64(in.Price),
 		Description: in.Description,
 		Url:         in.Url,
+		BaseID:      uint(in.BaseId),
 	}
 	err := controller.CreateProduct(&m)
 	if err != nil {
@@ -31,7 +32,7 @@ func (p *ProductService) Get(ctx context.Context, in *pb.RequestById) (*pb.Produ
 	if err != nil {
 		return &pb.Product{}, err
 	}
-	return &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price)}, err
+	return &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price), BaseId: uint64(m.BaseID)}, err
 }
 
 func (p *ProductService) GetAll(ctx context.Context, in *pb.RequestGetAll) (*pb.ResponseGetAll, error) {
@@ -41,14 +42,14 @@ func (p *ProductService) GetAll(ctx context.Context, in *pb.RequestGetAll) (*pb.
 	}
 	products := make([]*pb.Product, len(ms))
 	for i, m := range ms {
-		products[i] = &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price)}
+		products[i] = &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price), BaseId: uint64(m.BaseID)}
 	}
 	return &pb.ResponseGetAll{Products: products}, nil
 }
 
 func (ps *ProductService) Update(ctx context.Context, in *pb.RequestUpdate) (*pb.Response, error) {
 	p := in.Product
-	new := model.Product{Name: p.Name, Description: p.Description, Price: float64(p.Price), Url: p.Url}
+	new := model.Product{Name: p.Name, Description: p.Description, Price: float64(p.Price), Url: p.Url, BaseID: uint(p.BaseId)}
 	err := controller.UpdateProductById(uint(in.Id), &new)
 	if err != nil {
 		return nil, err
@@ -74,7 +75,22 @@ func (p *ProductService) GetInBatch(ctx context.Context, in *pb.RequestGetInBatc
 	}
 	products := make([]*pb.Product, len(ms))
 	for i, m := range ms {
-		products[i] = &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price)}
+		products[i] = &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price), BaseId: uint64(m.BaseID)}
+	}
+	return &pb.ResponseGetAll{Products: products}, nil
+}
+
+func (p *ProductService) GetByBase(ctx context.Context, in *pb.RequestGetByBase) (*pb.ResponseGetAll, error) {
+	ms, err := controller.GetProductsByBase(in.Base)
+	if err != nil {
+		return nil, err
+	}
+	if ms == nil {
+		return nil, nil
+	}
+	products := make([]*pb.Product, len(ms))
+	for i, m := range ms {
+		products[i] = &pb.Product{Id: uint64(m.ID), Name: m.Name, Url: m.Url, Description: m.Description, Price: float32(m.Price), BaseId: uint64(m.BaseID)}
 	}
 	return &pb.ResponseGetAll{Products: products}, nil
 }

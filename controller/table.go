@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"fmt"
 	"information-service/model"
 	"information-service/storage"
+	"log"
 )
 
 func createTable(id uint) model.Table {
@@ -18,19 +20,23 @@ func RemoveTableFromEstablishment(establishmentID, quantity uint) (uint32, error
 		return 0, nil
 	}
 	m := model.Establishment{}
+	log.Print(establishmentID)
 	if establishmentID < 1 || storage.DB().Where("id = ?", establishmentID).First(&m).RowsAffected == 0 {
-		return 0, ErrEstablishmentNotFound
+		return 0, fmt.Errorf("first establishment: %w", ErrEstablishmentNotFound)
 	}
 	tables := []model.Table{}
-	res := storage.DB().Where("establishment_id = ? AND user_id = 0", establishmentID).Limit(int(quantity)).Find(&tables)
+	res := storage.DB().Select("id").Where("establishment_id = ? AND user_id = 0", establishmentID).Limit(int(quantity)).Find(&tables)
 	if res.Error != nil {
-		return 0, res.Error
+		return 0, fmt.Errorf("first q tables: %w", res.Error)
 	}
 	if res.RowsAffected == 0 {
 		return 0, ErrEstablishmentHasNoTables
 	}
-	res = storage.DB().Delete(tables)
-	return uint32(res.RowsAffected), res.Error
+	res = storage.DB().Delete(&tables)
+	if res.Error != nil {
+		return 0, fmt.Errorf("delete: %w", res.Error)
+	}
+	return uint32(res.RowsAffected), nil
 }
 
 func IncreaseQuantityTablesInEstablishment(id uint, quantity int) ([]uint64, error) {
