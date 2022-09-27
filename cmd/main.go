@@ -53,25 +53,20 @@ func main() {
 		log.Fatal(err)
 	}
 	storage.DB().AutoMigrate(&model.Establishment{}, &model.Product{}, &model.Table{})
-	env := "INFO_HOST"
-	host, f := os.LookupEnv(env)
-	if !f {
-		log.Fatalf("environment variable (%s) not found", env)
-	}
-	env = "INFO_PORT"
+	env := "INFO_PORT"
 	port, f := os.LookupEnv(env)
 	if !f {
 		log.Fatalf("environment variable (%s) not found", env)
 	}
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", host, port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := route.Start()
 
-	log.Printf("Server started at %s:%s", host, port)
+	log.Printf("Server started at :%s", port)
 	err = grpcServer.Serve(lis)
 	if err != nil {
-		log.Fatalf("failed to server at %s:%s, got error: %s", host, port, err)
+		log.Fatalf("failed to server at :%s, got error: %s", port, err)
 	}
 }
