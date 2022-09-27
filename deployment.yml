@@ -18,7 +18,7 @@ spec:
         resources:
           requests:
             memory: "0.25Gi"
-            cpu: "250m"
+            cpu: "100m"
             ephemeral-storage: "128Mi"
           limits:
             memory: "0.25Gi"
@@ -60,7 +60,7 @@ spec:
         resources:
           requests:
             memory: "0.25Gi"
-            cpu: "250m"
+            cpu: "100m"
             ephemeral-storage: "128Mi"
           limits:
             memory: "0.25Gi"
@@ -102,7 +102,7 @@ metadata:
 spec:
   ports:
   - port: 3002
-    name: info-svc
+    name: info-port-svc
     protocol: TCP
     targetPort: 3002
   selector:

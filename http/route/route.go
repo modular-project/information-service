@@ -29,7 +29,7 @@ func Start() *xds.GRPCServer {
 			grpc_middleware.ChainStreamServer(),
 		)),
 	)
-	//d := grpc_middleware.WithUnaryServerChain(grpc_recovery.UnaryServerInterceptor(opts...))
+	// d := grpc_middleware.WithUnaryServerChain(grpc_recovery.UnaryServerInterceptor(opts...))
 	// server := grpc.NewServer(
 	// 	grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 	// 		grpc_recovery.UnaryServerInterceptor(opts...),
@@ -49,5 +49,6 @@ func Start() *xds.GRPCServer {
 	pbo.RegisterValidateOrderServer(server, &handler.OrderService{})
 	healthServer.SetServingStatus(pbo.ValidateOrder_ServiceDesc.ServiceName, healthpb.HealthCheckResponse_SERVING)
 	reflection.Register(server)
+	healthpb.RegisterHealthServer(server, healthServer)
 	return server
 }
