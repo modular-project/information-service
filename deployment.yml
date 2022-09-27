@@ -17,11 +17,11 @@ spec:
         image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG
         resources:
           requests:
-            memory: "0.5Gi"
+            memory: "0.25Gi"
             cpu: "250m"
             ephemeral-storage: "128Mi"
           limits:
-            memory: "0.5Gi"
+            memory: "0.25Gi"
             cpu: "250m"
             ephemeral-storage: "128Mi"
         ports:
@@ -59,11 +59,11 @@ spec:
         image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.0.0.preview.0  # make sure the use the latest version
         resources:
           requests:
-            memory: "1Gi"
+            memory: "0.25Gi"
             cpu: "250m"
-            ephemeral-storage: "64Mi"
+            ephemeral-storage: "128Mi"
           limits:
-            memory: "1Gi"
+            memory: "0.25Gi"
             cpu: "250m"
             ephemeral-storage: "128Mi"
         args:
