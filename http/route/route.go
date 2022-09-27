@@ -14,23 +14,13 @@ import (
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/xds"
 )
 
-func Start() *xds.GRPCServer {
+func Start() *grpc.Server {
 	opts := []grpc_recovery.Option{
 		grpc_recovery.WithRecoveryHandler(middleware.Recovery),
 	}
-	server := xds.NewGRPCServer(
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-			grpc_recovery.UnaryServerInterceptor(opts...),
-		)),
-		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
-			grpc_middleware.ChainStreamServer(),
-		)),
-	)
-	// d := grpc_middleware.WithUnaryServerChain(grpc_recovery.UnaryServerInterceptor(opts...))
-	// server := grpc.NewServer(
+	// server := xds.NewGRPCServer(
 	// 	grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 	// 		grpc_recovery.UnaryServerInterceptor(opts...),
 	// 	)),
@@ -38,6 +28,15 @@ func Start() *xds.GRPCServer {
 	// 		grpc_middleware.ChainStreamServer(),
 	// 	)),
 	// )
+	// d := grpc_middleware.WithUnaryServerChain(grpc_recovery.UnaryServerInterceptor(opts...))
+	server := grpc.NewServer(
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_recovery.UnaryServerInterceptor(opts...),
+		)),
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			grpc_middleware.ChainStreamServer(),
+		)),
+	)
 	healthServer := health.NewServer()
 	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
 	pbp.RegisterProductServiceServer(server, &handler.ProductService{})
