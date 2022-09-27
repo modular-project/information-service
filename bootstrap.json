@@ -11,12 +11,13 @@
       }
     ],
     "node": {
-      "id": "projects/332412992214/networks/default/nodes/user-xds",
+      "id": "projects/332412992214/networks/default/nodes/info-xds",
       "metadata": {
         "TRAFFICDIRECTOR_NETWORK_NAME": "default"
       },
       "locality": {
         "zone": "northamerica-northeast1"
       }
-    }
+    },
+    "server_listener_resource_name_template": "grpc/server?xds.resource.listening_address=3002"
   }
