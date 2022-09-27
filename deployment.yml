@@ -26,10 +26,10 @@ spec:
             ephemeral-storage: "128Mi"
         ports:
         - containerPort: 3002
-          protocol: RPC
+          protocol: TCP
         env:
-        - name: GRPC_XDS_BOOTSTRAP
-          value: /bootstrap.json
+        # - name: GRPC_XDS_BOOTSTRAP
+        #   value: /bootstrap.json
         - name: INFO_DB_NAME
           valueFrom:
             secretKeyRef:
@@ -103,7 +103,7 @@ spec:
   ports:
   - port: 3002
     name: info-port-svc
-    protocol: RPC
+    protocol: TCP
     targetPort: 3002
   selector:
     app: info-app
