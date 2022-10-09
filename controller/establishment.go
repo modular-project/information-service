@@ -29,12 +29,18 @@ func UpdateEstablishmentData(m *model.Establishment) error {
 	return storage.DB().Model(&model.Establishment{}).Select("Name").Updates(m).Error
 }
 
-func RemoveEstablishment(m *model.Establishment) error {
+func RemoveEstablishment(m *model.Establishment) (string, error) {
 	if m.ID == 0 {
-		return ErrEstablishmentNotFound
+		return "", ErrEstablishmentNotFound
 	}
 	// don't remove if it have pending orders
-	return storage.DB().Delete(m).Error
+	if err := storage.DB().Select("AddressID").First(m).Error; err != nil {
+		return "", fmt.Errorf("find establishment: %w", err)
+	}
+	if err := storage.DB().Delete(m).Error; err != nil {
+		return "", fmt.Errorf("delete establishment: %w", err)
+	}
+	return m.AddressID, nil
 }
 
 func GetEstablishmentByID(id uint) (model.Establishment, error) {

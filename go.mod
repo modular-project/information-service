@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/modular-project/protobuffers v0.0.0-20220915183322-d8e8c37dbdd6
+	github.com/modular-project/protobuffers v0.0.0-20221008170126-2150da2ad763
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220706163947-c90051bbdb60 // indirect
 	google.golang.org/genproto v0.0.0-20220707150051-590a5ac7bee1 // indirect

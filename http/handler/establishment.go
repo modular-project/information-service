@@ -44,11 +44,11 @@ func (s *EstablishmentService) Update(ctx context.Context, in *pb.RequestUpdate)
 }
 
 func (s *EstablishmentService) Delete(ctx context.Context, in *pb.RequestById) (*pb.ResponseDelete, error) {
-	err := controller.RemoveEstablishment(&model.Establishment{Model: model.Model{ID: uint(in.Id)}})
+	aID, err := controller.RemoveEstablishment(&model.Establishment{Model: model.Model{ID: uint(in.Id)}})
 	if err != nil {
 		return &pb.ResponseDelete{}, fmt.Errorf("RemoveEstablishment: %w", err)
 	}
-	return &pb.ResponseDelete{}, nil
+	return &pb.ResponseDelete{AddressId: aID}, nil
 }
 
 func (s *EstablishmentService) Create(ctx context.Context, in *pb.RequestCreate) (*pb.Response, error) {
